@@ -1,54 +1,79 @@
-# 📚 ReadScope
+# 📚 ReadScope – Goodreads Reading Habit Analyzer
 
-**ReadScope** is a clean, interactive web app that visualizes your Goodreads reading habits using 5 beautiful charts. Upload your Goodreads export and get insights into your reading trends, favorite authors, genres, and more.
-
+**ReadScope** is a clean, interactive web app that visualizes your Goodreads reading data using 5 beautiful charts. Just upload your Goodreads export file and get instant insights into your reading history – books, ratings, authors, pages, and more.
 
 ---
 
 ## 🔗 Live Demo
 
-👉 [ReadScope on GitHub Pages](https://monikak2004.github.io/readscope)
+👉 [ReadScope on GitHub Pages](https://monikak2004.github.io/readscope)  
 
-> *(Replace `yourusername` with your actual GitHub username)*
 
 ---
 
 ## ✨ Features
 
-- 📈 **Books Per Year**
-- ⭐ **Average Ratings Per Year**
-- ✍️ **Top Authors**
-- 🗂️ **Top Shelves**
-- 📏 **Longest Books (by Pages)**
-- 📁 Upload your own Goodreads export file
-- 📊 Clean layout with interactive Chart.js visuals
-- 💻 Responsive & mobile-friendly design
+- 📈 **Books Per Year** – See how much you've read each year
+- ⭐ **Average Rating Per Year** – Track your evolving reading tastes
+- ✍️ **Top 5 Authors** – Discover your most-read authors
+- 🗂️ **Top 5 Shelves** – Visualize your genre preferences
+- 📏 **Avg Pages Per Year** – Understand your reading depth over time
+- 🌓 **Dark / Light Mode Toggle**
+- 📊 Built with Chart.js for smooth interactive visuals
+- 📁 Upload your own Goodreads export file (CSV)
+- 🎯 Responsive design that works on all devices
 
 ---
 
-## 🛠 Tech Stack
+## 📁 How To Use
+
+1. Go to Goodreads → [Export your data](https://www.goodreads.com/review/import)
+2. Download the CSV file of your reading history
+3. Rename it to:  
+4. Replace the default file in this project folder (or upload it live!)
+5. Open `index.html` in your browser  
+OR  
+View it live here: [ReadScope Live Demo](https://yourusername.github.io/readscope)
+
+---
+
+## 🛠 Built With
 
 - HTML5 + CSS3
 - JavaScript (Vanilla)
 - [Chart.js](https://www.chartjs.org/)
-- [PapaParse](https://www.papaparse.com/)
+- [PapaParse](https://www.papaparse.com/) for CSV parsing
+- Responsive + mobile-friendly layout
+- Font: Inter
 
 ---
 
-## 📁 Usage
+## 📌 Why I Made This
 
-1. Export your Goodreads library from [https://www.goodreads.com/review/import](https://www.goodreads.com/review/import)
-2. Rename the exported file to:  
-   **`my_goodreads_data.csv`**
-3. Replace the demo file in the project folder.
-4. Open `index.html` in your browser – or view the [Live Demo](https://monikak2004.github.io/readscope)
+As someone who loves books and data, I wanted to build a project that reflects both passions. **ReadScope** is a personal dashboard for any reader — a space to analyze, reflect, and celebrate your reading journey.
 
 ---
 
-## 💡 Why I Built This
+## 🧠 Ideas for the Future
 
-As a book lover, I wanted to create something that combines my passion for reading with my interest in data visualization and frontend design. **ReadScope** is more than just a project — it's a reflection of both technical and personal curiosity.
+- Genre-level analysis
+- Monthly reading streaks
+- Reading goal progress
+- Export as PDF or image
 
 ---
 
+## 🙌 Contributing
+
+Feel free to fork, improve, or build on this for your own reading insights!
+
 ---
+
+## 👤 Author
+
+**Monika K**  
+[GitHub](https://github.com/monikak2004) | [LinkedIn](www.linkedin.com/in/monika-k-6a7643288)
+
+---
+
+
