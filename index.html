@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ReadScope – Book Habit Visualizer</title>
+
+  <!-- Fonts & Libraries -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --text: #1f2937;
+      --subtext: #6b7280;
+      --accent: #d97706;
+      --card: #ffffff;
+      --border: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: auto;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: var(--accent);
+    }
+
+    header p {
+      color: var(--subtext);
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .chart-box {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 1rem;
+      width: 280px;
+      flex: 1 1 280px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+      min-height: 320px;
+    }
+
+    .chart-box h2 {
+      font-size: 1rem;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+
+    canvas {
+      max-width: 100%;
+      max-height: 220px;
+      margin: 0 auto;
+      display: block;
+    }
+
+    #upload-section {
+      margin-top: 3rem;
+      padding: 1rem;
+      background: #fff7ed;
+      border: 1px dashed var(--accent);
+      text-align: center;
+      border-radius: 8px;
+    }
+
+    #upload-section label {
+      background: var(--accent);
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #upload-section input {
+      display: none;
+    }
+
+    .status {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--subtext);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📚 ReadScope</h1>
+      <p>Visualize your Goodreads reading habits in 5 beautiful charts</p>
+    </header>
+
+    <div class="grid" id="chart-area"></div>
+
+    <section id="upload-section">
+      <p><strong>Optional:</strong> Upload a different Goodreads export CSV</p>
+      <label for="csvFile">Upload CSV</label>
+      <input type="file" id="csvFile" accept=".csv" />
+      <div class="status" id="statusText">Currently using default Goodreads data</div>
+    </section>
+  </div>
+
+  <script>
+    const chartArea = document.getElementById('chart-area');
+    const statusText = document.getElementById('statusText');
+    const fileInput = document.getElementById('csvFile');
+
+    let chartInstances = [];
+
+    function createChart(id, title, type, labels, data, bgColors = null) {
+      const box = document.createElement('div');
+      box.className = 'chart-box';
+      box.innerHTML = `<h2>${title}</h2><canvas id="${id}"></canvas>`;
+      chartArea.appendChild(box);
+
+      const ctx = document.getElementById(id).getContext('2d');
+      const config = {
+        type: type,
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: bgColors || '#fbbf24',
+            borderColor: '#d97706',
+            fill: type === 'line',
+            tension: 0.4
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { display: type === 'doughnut' },
+            tooltip: {
+              callbacks: {
+                title: (context) => labels[context[0].dataIndex]
+              }
+            }
+          },
+          scales: type !== 'doughnut' ? {
+            x: {
+              ticks: {
+                autoSkip: false,
+                maxRotation: 0,
+                minRotation: 0,
+              }
+            },
+            y: {
+              beginAtZero: true
+            }
+          } : {}
+        }
+      };
+
+      const chart = new Chart(ctx, config);
+      chartInstances.push(chart);
+    }
+
+    function renderCharts(data) {
+      chartArea.innerHTML = '';
+      chartInstances.forEach(c => c.destroy());
+      chartInstances = [];
+
+      const yearCounts = {}, yearRatings = {}, authorCounts = {}, shelfCounts = {}, longestBooks = [];
+
+      data.forEach(row => {
+        const year = new Date(row["Date Read"]).getFullYear();
+        const rating = parseFloat(row["My Rating"]);
+        const author = row["Author"];
+        const shelves = row["Bookshelves"];
+        const pages = parseInt(row["Number of Pages"]);
+        const title = row["Title"];
+
+        if (!isNaN(year)) {
+          yearCounts[year] = (yearCounts[year] || 0) + 1;
+          if (!yearRatings[year]) yearRatings[year] = { total: 0, count: 0 };
+          if (!isNaN(rating)) {
+            yearRatings[year].total += rating;
+            yearRatings[year].count += 1;
+          }
+        }
+
+        if (author) authorCounts[author] = (authorCounts[author] || 0) + 1;
+
+        if (shelves) {
+          shelves.split(',').forEach(shelf => {
+            const clean = shelf.trim();
+            if (clean) shelfCounts[clean] = (shelfCounts[clean] || 0) + 1;
+          });
+        }
+
+        if (!isNaN(pages)) longestBooks.push({ title, pages });
+      });
+
+      const years = Object.keys(yearCounts).sort();
+      createChart("booksYear", "Books Per Year", "bar", years, years.map(y => yearCounts[y]));
+
+      const avgRatings = years.map(y => {
+        const r = yearRatings[y];
+        return r.count > 0 ? (r.total / r.count).toFixed(2) : 0;
+      });
+      createChart("avgRating", "Avg Rating Per Year", "line", years, avgRatings);
+
+      const topAuthors = Object.entries(authorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      createChart("topAuthors", "Top 5 Authors", "doughnut", topAuthors.map(a => a[0]), topAuthors.map(a => a[1]), [
+        '#fbbf24', '#facc15', '#fcd34d', '#fde68a', '#fff7ed'
+      ]);
+
+      const topShelves = Object.entries(shelfCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      createChart("topShelves", "Top 5 Shelves", "bar", topShelves.map(s => s[0]), topShelves.map(s => s[1]));
+
+      const topPages = longestBooks.sort((a, b) => b.pages - a.pages).slice(0, 5);
+      const titles = topPages.map(b => b.title.length > 22 ? b.title.slice(0, 22) + "..." : b.title);
+      const pages = topPages.map(b => b.pages);
+      createChart("longestBooks", "Longest Books (Pages)", "bar", titles, pages);
+    }
+
+    function handleCSV(file) {
+      statusText.textContent = "Parsing uploaded CSV...";
+      Papa.parse(file, {
+        header: true,
+        complete: results => renderCharts(results.data)
+      });
+    }
+
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file && file.name.endsWith(".csv")) {
+        handleCSV(file);
+        statusText.textContent = `Uploaded: ${file.name}`;
+      } else {
+        statusText.textContent = "Please upload a valid Goodreads CSV file.";
+      }
+    });
+
+    fetch("my_goodreads_data.csv")
+      .then(res => res.text())
+      .then(csvText => {
+        const results = Papa.parse(csvText, { header: true });
+        renderCharts(results.data);
+      });
+  </script>
+</body>
+</html>
